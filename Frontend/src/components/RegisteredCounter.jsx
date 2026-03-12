@@ -43,16 +43,7 @@ const RegisteredCounter = () => {
                 </div>
                 <div className="absolute -top-1 -right-1 w-3 h-3 bg-emerald-500 rounded-full border-2 border-slate-900 animate-pulse"></div>
             </div>
-            <div className="text-left">
-                <p className="text-[10px] font-black uppercase tracking-[0.2em] text-blue-400 mb-0.5">Community Growth</p>
-                <h4 className="text-2xl font-black text-white tracking-tight">
-                    <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-100 to-blue-300">
-                        {displayCount.toLocaleString()}
-                    </span>
-                    <span className="text-blue-400/50 ml-1">+</span>
-                    <span className="text-sm font-bold text-slate-400 ml-2 uppercase tracking-tighter">Registered Citizens</span>
-                </h4>
-            </div>
+
         </div>
     );
 };

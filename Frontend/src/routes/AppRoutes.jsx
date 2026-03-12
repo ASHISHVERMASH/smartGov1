@@ -1,61 +1,68 @@
 import { Routes, Route } from 'react-router-dom';
+
 import Home from '../pages/Home';
 import Login from '../pages/Login';
 import Register from '../pages/Register';
 import Dashboard from '../pages/Dashboard';
 import OfficerDashboard from '../pages/OfficerDashboard';
-import AdminDashboard from '../pages/AdminDashboard'; 
+import AdminDashboard from '../pages/AdminDashboard';
 import Profile from '../pages/Profile';
+import Services from '../pages/ServiceDetails'; //  NEW IMPORT
+
 import ProtectedRoute from './ProtectedRoute';
 
 const AppRoutes = () => {
-  return (
-    <Routes>
-      <Route path="/" element={<Home />} />
-      <Route path="/login" element={<Login />} />
-      <Route path="/register" element={<Register />} />
+    return (
+        <Routes>
 
-      {/* Citizen Access */}
-      <Route 
-        path="/dashboard" 
-        element={
-          <ProtectedRoute allowedRoles={['Citizen']}>
-            <Dashboard />
-          </ProtectedRoute>
-        } 
-      />
+            {/* Public Pages */}
+            <Route path="/" element={<Home />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/register" element={<Register />} />
+            <Route path="/services" element={<Services />} /> {/* ⭐ NEW ROUTE */}
 
-      {/* Officer & Admin Access */}
-      <Route 
-        path="/officer-dashboard" 
-        element={
-          <ProtectedRoute allowedRoles={['Officer', 'Admin']}>
-            <OfficerDashboard />
-          </ProtectedRoute>
-        } 
-      />
+            {/* Citizen Access */}
+            <Route
+                path="/dashboard"
+                element={
+                    <ProtectedRoute allowedRoles={['Citizen']}>
+                        <Dashboard />
+                    </ProtectedRoute>
+                }
+            />
 
-      {/* Admin Only Access */}
-      <Route
-        path="/admin-dashboard"
-        element={
-          <ProtectedRoute allowedRoles={["Admin"]}>
-            <AdminDashboard />
-          </ProtectedRoute>
-        }
-      />
+            {/* Officer & Admin Access */}
+            <Route
+                path="/officer-dashboard"
+                element={
+                    <ProtectedRoute allowedRoles={['Officer', 'Admin']}>
+                        <OfficerDashboard />
+                    </ProtectedRoute>
+                }
+            />
 
-      {/* Authenticated Profile */}
-      <Route
-        path="/profile"
-        element={
-          <ProtectedRoute>
-            <Profile />
-          </ProtectedRoute>
-        }
-      />
-    </Routes>
-  );
+            {/* Admin Only */}
+            <Route
+                path="/admin-dashboard"
+                element={
+                    <ProtectedRoute allowedRoles={['Admin']}>
+                        <AdminDashboard />
+                    </ProtectedRoute>
+                }
+            />
+
+            {/* Profile */}
+            <Route
+                path="/profile"
+                element={
+                    <ProtectedRoute>
+                        <Profile />
+                    </ProtectedRoute>
+                }
+            />
+
+        </Routes>
+    );
 };
 
 export default AppRoutes;
