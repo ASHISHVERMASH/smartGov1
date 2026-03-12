@@ -5,6 +5,7 @@ import com.example.SmartGov.dto.OtpVerificationDTO;
 import com.example.SmartGov.entity.OtpVerification;
 import com.example.SmartGov.enums.OTPType;
 import com.example.SmartGov.repository.OtpVerificationRepository;
+
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
@@ -37,19 +38,23 @@ public class OtpService {
         this.mailSender = mailSender;
     }
 
+    // Generate 6 digit OTP
     private String generateOTP() {
         Random random = new Random();
         return String.format("%06d", random.nextInt(999999));
     }
 
+    // Create and Send OTP
     public OtpVerification createAndSendOTP(OtpRequestDto request) {
 
         OTPType type = OTPType.valueOf(request.getType().toUpperCase());
 
         // Rate limit check
         LocalDateTime lastHour = LocalDateTime.now().minusHours(1);
-        Long recentRequests = otpRepository.countByEmailAndOtpTypeAndCreatedAtAfter(
-                request.getEmail(), type, lastHour);
+
+        Long recentRequests = otpRepository
+                .countByEmailAndOtpTypeAndCreatedAtAfter(
+                        request.getEmail(), type, lastHour);
 
         if (recentRequests >= maxResend) {
             throw new RuntimeException("Maximum resend attempts reached. Please try again later.");
@@ -72,11 +77,13 @@ public class OtpService {
 
         otp = otpRepository.save(otp);
 
+        // Send Email
         sendOTPEmail(request.getEmail(), otpCode);
 
         return otp;
     }
 
+    // Verify OTP
     public boolean verifyOTP(OtpVerificationDTO request) {
 
         OTPType type = OTPType.valueOf(request.getType().toUpperCase());
@@ -115,6 +122,7 @@ public class OtpService {
         return true;
     }
 
+    // Check if email already verified
     public boolean isEmailVerified(String email) {
 
         Optional<OtpVerification> otpOpt =
@@ -127,29 +135,54 @@ public class OtpService {
 
         OtpVerification otp = otpOpt.get();
 
-        return otp.getVerified() && otp.getExpiresAt().isAfter(LocalDateTime.now());
+        return otp.getVerified() &&
+                otp.getExpiresAt().isAfter(LocalDateTime.now());
     }
 
+    // Send OTP Email
     private void sendOTPEmail(String toEmail, String otpCode) {
+
         try {
 
             SimpleMailMessage message = new SimpleMailMessage();
+
             message.setFrom(fromEmail);
             message.setTo(toEmail);
-            message.setSubject("SmartGov - Email Verification OTP");
+            message.setSubject("SmartGov | Secure Email Verification OTP");
+
             message.setText(
-                    "Your OTP for SmartGov registration is: " + otpCode + "\n\n" +
-                            "This OTP is valid for " + otpExpiryMinutes + " minutes.\n\n" +
-                            "SmartGov Team"
+
+                    "Dear User,\n\n" +
+
+                            "Welcome to SmartGov – your digital platform for accessing government services quickly and securely.\n\n" +
+
+                            "Your One-Time Password (OTP) for completing your SmartGov registration is:\n\n" +
+
+                            "OTP: " + otpCode + "\n\n" +
+
+                            "This OTP is valid for " + otpExpiryMinutes + " minutes.\n" +
+                            "Please do not share this OTP with anyone for security reasons.\n\n" +
+
+                            "If you did not request this verification, please ignore this email.\n\n" +
+
+                            "Thank you for using SmartGov.\n\n" +
+
+                            "Regards,\n" +
+                            "SmartGov Team\n" +
+                            "Digital Government Services Platform"
+
             );
 
+            // Send Email
             mailSender.send(message);
+
             System.out.println("OTP email sent to: " + toEmail);
 
         } catch (Exception e) {
 
             System.err.println("Email failed: " + e.getMessage());
 
+            // fallback for development
             System.out.println("\n===============================");
             System.out.println("OTP for " + toEmail + ": " + otpCode);
             System.out.println("===============================");

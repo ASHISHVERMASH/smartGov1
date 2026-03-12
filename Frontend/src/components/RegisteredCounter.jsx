@@ -13,11 +13,11 @@ const RegisteredCounter = () => {
                     setCount(data);
                 } else {
                     // Fallback baseline if API fails
-                    setCount(50);
+                    setCount(100);
                 }
             } catch (error) {
                 console.error('Error fetching user count:', error);
-                setCount(50);
+                setCount(100);
             }
         };
 

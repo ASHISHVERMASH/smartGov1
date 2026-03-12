@@ -188,11 +188,20 @@ const Home = () => {
 
       {/* --- FOOTER CTA --- */}
       <footer className="bg-white dark:bg-slate-950 py-20 border-t border-slate-100 dark:border-slate-900 text-center">
-        <h3 className="text-2xl font-bold text-slate-900 dark:text-white mb-4 tracking-tight">Need assistance?</h3>
-        <p className="text-slate-500 dark:text-slate-400 mb-8 max-w-sm mx-auto text-sm font-medium">Our 24/7 digital helpdesk is here to guide you through government processes.</p>
-        <button className="px-8 py-4 bg-slate-100 dark:bg-slate-900 text-slate-900 dark:text-white rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-slate-200 transition-all">
+        <h3 className="text-2xl font-bold text-slate-900 dark:text-white mb-4 tracking-tight">
+          Need assistance?
+        </h3>
+
+        <p className="text-slate-500 dark:text-slate-400 mb-8 max-w-sm mx-auto text-sm font-medium">
+          Our 24/7 digital helpdesk is here to guide you through government processes.
+        </p>
+
+        <a
+            href="mailto:ashishverma@gmail.com?subject=SmartGov Support Request"
+            className="px-8 py-4 bg-slate-100 dark:bg-slate-900 text-slate-900 dark:text-white rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-slate-200 transition-all inline-block"
+        >
           Contact Support
-        </button>
+        </a>
       </footer>
     </div>
   );
