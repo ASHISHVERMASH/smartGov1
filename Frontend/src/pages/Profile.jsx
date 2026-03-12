@@ -45,7 +45,7 @@ const Profile = () => {
   const uploadPhoto = async (base64Image) => {
     setUploading(true);
     try {
-      const response = await fetch('http://localhost:8080/api/auth/update-profile-picture', {
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/auth/update-profile-picture`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
