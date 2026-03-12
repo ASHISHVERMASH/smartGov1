@@ -50,7 +50,6 @@ const SearchBar = () => {
   return (
       <div className="relative w-full max-w-2xl mx-auto">
 
-        {/* Search Input */}
         <div className="relative group">
           <input
               type="text"
@@ -66,7 +65,6 @@ const SearchBar = () => {
           </div>
         </div>
 
-        {/* Results Dropdown */}
         {query.length > 1 && (
             <div className="absolute w-full mt-2 bg-white rounded-2xl shadow-2xl border border-slate-100 overflow-hidden z-50">
 
@@ -78,7 +76,6 @@ const SearchBar = () => {
                           className="w-full px-6 py-4 text-left hover:bg-slate-50 flex justify-between items-center group transition-colors"
                       >
                         <div className="flex items-center gap-3">
-
                           <span className="text-xl">{item.icon}</span>
 
                           <div>
@@ -90,7 +87,6 @@ const SearchBar = () => {
                               {item.category}
                             </p>
                           </div>
-
                         </div>
 
                         <span className="text-slate-300 group-hover:text-blue-500">
@@ -106,6 +102,7 @@ const SearchBar = () => {
 
             </div>
         )}
+
       </div>
   );
 };

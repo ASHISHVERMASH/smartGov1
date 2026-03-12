@@ -1,7 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import Searchbar from '../components/Searchbar';
-import RegisteredCounter from '../components/RegisteredCounter';
+import SearchBar from '../components/SearchBar';
 import { servicesData } from '../data/servicesData';
 
 const Home = () => {
