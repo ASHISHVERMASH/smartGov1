@@ -1,6 +1,5 @@
 package com.example.SmartGov.Config;
 
-import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -24,36 +23,51 @@ import java.util.Arrays;
 @EnableWebSecurity
 public class SecurityConfig {
 
-    // Constructor injection manually
+    private final UserDetailsService userDetailsService;
+
+    // Constructor Injection
     public SecurityConfig(UserDetailsService userDetailsService) {
         this.userDetailsService = userDetailsService;
     }
 
-    private final UserDetailsService userDetailsService;
-
+    // ================= SECURITY FILTER =================
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+
         http
+                // Enable CORS
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+
+                // Disable CSRF for API
                 .csrf(csrf -> csrf.disable())
+
+                // Authorization Rules
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/auth/**").permitAll()  // Auth endpoints
-                        .requestMatchers("/smartGov/**").permitAll()  // Your SmartGov endpoints
+                        .requestMatchers("/api/auth/**").permitAll()
+                        .requestMatchers("/smartGov/**").permitAll()
                         .anyRequest().authenticated()
                 )
-                .sessionManagement(session -> session
-                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-                );
+
+                // Stateless Session (JWT ready)
+                .sessionManagement(session ->
+                        session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+                )
+
+                // Authentication Provider
+                .authenticationProvider(authenticationProvider());
 
         return http.build();
     }
+
+    // ================= CORS CONFIG =================
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
 
         CorsConfiguration configuration = new CorsConfiguration();
 
         configuration.setAllowedOrigins(Arrays.asList(
-                "http://localhost:5173"
+                "http://localhost:5173",                 // local frontend
+                "https://smartgov-portal.vercel.app"     // production frontend
         ));
 
         configuration.setAllowedMethods(Arrays.asList(
@@ -72,19 +86,28 @@ public class SecurityConfig {
         return source;
     }
 
+    // ================= AUTH PROVIDER =================
     @Bean
     public AuthenticationProvider authenticationProvider() {
-        DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider();
+
+        DaoAuthenticationProvider authProvider =
+                new DaoAuthenticationProvider();
+
         authProvider.setUserDetailsService(userDetailsService);
         authProvider.setPasswordEncoder(passwordEncoder());
+
         return authProvider;
     }
 
+    // ================= AUTH MANAGER =================
     @Bean
-    public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
+    public AuthenticationManager authenticationManager(
+            AuthenticationConfiguration config) throws Exception {
+
         return config.getAuthenticationManager();
     }
 
+    // ================= PASSWORD ENCODER =================
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
