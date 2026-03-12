@@ -1,6 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import SearchBar from '../components/SearchBar';
+import Searchbar from '../components/Searchbar';
 import RegisteredCounter from '../components/RegisteredCounter';
 import { servicesData } from '../data/servicesData';
 
