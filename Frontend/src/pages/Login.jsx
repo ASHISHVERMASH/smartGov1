@@ -55,7 +55,7 @@ const Login = () => {
   };
 
   return (
-    <div className="min-h-screen flex bg-slate-50">
+    <div className="min-h-screen flex bg-slate-50 dark:bg-slate-950 transition-colors duration-500">
       {/* Left Branding Side */}
       <div className="hidden lg:flex w-1/2 bg-blue-900 items-center justify-center p-16 text-white text-left relative overflow-hidden">
         {/* Background Decorative Elements */}
@@ -116,23 +116,23 @@ const Login = () => {
       </div>
 
       {/* Right Login Form Side */}
-      <div className="w-full lg:w-1/2 flex items-center justify-center p-8">
+      <div className="w-full lg:w-1/2 flex items-center justify-center p-8 bg-white dark:bg-slate-950">
         <div className="max-w-md w-full">
           <div className="mb-10 text-center lg:text-left">
-            <h2 className="text-3xl font-bold text-slate-900">Sign In</h2>
-            <p className="text-slate-500 text-sm mt-2">Select your role to access the relevant panel.</p>
+            <h2 className="text-3xl font-bold text-slate-900 dark:text-white">Sign In</h2>
+            <p className="text-slate-500 dark:text-slate-400 text-sm mt-2">Select your role to access the relevant panel.</p>
           </div>
 
           {/* Role Selector */}
-          <div className="flex p-1 bg-slate-200 rounded-xl mb-8">
+          <div className="flex p-1 bg-slate-200 dark:bg-slate-900 rounded-xl mb-8">
             {['Citizen', 'Officer', 'Admin'].map((r) => (
               <button
                 key={r}
                 type="button"
                 onClick={() => setFormData({ ...formData, role: r })}
                 className={`flex-1 py-2.5 text-xs font-bold rounded-lg transition-all duration-200 ${formData.role === r
-                  ? 'bg-white text-blue-700 shadow-md'
-                  : 'text-slate-600 hover:text-slate-900'
+                  ? 'bg-white dark:bg-slate-800 text-blue-700 dark:text-blue-400 shadow-md'
+                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
                   }`}
               >
                 {r}
@@ -142,25 +142,25 @@ const Login = () => {
 
           <form onSubmit={handleLogin} className="space-y-5 text-left">
             <div>
-              <label className="block text-sm font-semibold text-slate-700 mb-1.5">Email or Citizen ID</label>
+              <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Email or Citizen ID</label>
               <input
                 required
                 type="text"
                 value={formData.identifier}
                 onChange={(e) => setFormData({ ...formData, identifier: e.target.value })}
-                className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-4 focus:ring-blue-100 focus:border-blue-500 outline-none transition-all"
+                className="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:ring-4 focus:ring-blue-100 dark:focus:ring-blue-900/20 focus:border-blue-500 outline-none transition-all"
                 placeholder="Enter your ID"
               />
             </div>
 
             <div>
-              <label className="block text-sm font-semibold text-slate-700 mb-1.5">Security Password</label>
+              <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Security Password</label>
               <input
                 required
                 type="password"
                 value={formData.password}
                 onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-4 focus:ring-blue-100 focus:border-blue-500 outline-none transition-all"
+                className="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:ring-4 focus:ring-blue-100 dark:focus:ring-blue-900/20 focus:border-blue-500 outline-none transition-all"
                 placeholder="••••••••"
               />
             </div>
@@ -173,8 +173,8 @@ const Login = () => {
             </button>
           </form>
 
-          <p className="mt-8 text-center text-sm text-slate-500">
-            Don't have an account? <span className="text-blue-600 font-bold cursor-pointer hover:underline" onClick={() => navigate('/register')}>Create one now</span>
+          <p className="mt-8 text-center text-sm text-slate-500 dark:text-slate-400">
+            Don't have an account? <span className="text-blue-600 dark:text-blue-400 font-bold cursor-pointer hover:underline" onClick={() => navigate('/register')}>Create one now</span>
           </p>
         </div>
       </div>

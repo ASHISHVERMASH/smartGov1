@@ -197,10 +197,10 @@ const Register = () => {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 flex items-center justify-center py-12 px-6">
-      <div className="max-w-2xl w-full bg-white p-10 rounded-3xl shadow-xl border border-slate-100">
-        <h2 className="text-3xl font-bold text-slate-900 mb-2 text-left">Create Citizen Account</h2>
-        <p className="text-slate-500 mb-8 text-sm text-left">Fill in your official details to access government services.</p>
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 flex items-center justify-center py-12 px-6 transition-colors duration-500">
+      <div className="max-w-2xl w-full bg-white dark:bg-slate-900 p-10 rounded-3xl shadow-xl border border-slate-100 dark:border-slate-800">
+        <h2 className="text-3xl font-bold text-slate-900 dark:text-white mb-2 text-left">Create Citizen Account</h2>
+        <p className="text-slate-500 dark:text-slate-400 mb-8 text-sm text-left">Fill in your official details to access government services.</p>
 
         {message && <div className="mb-4 p-3 bg-green-100 text-green-800 rounded-lg">{message}</div>}
         {error && <div className="mb-4 p-3 bg-red-100 text-red-800 rounded-lg">{error}</div>}
@@ -208,12 +208,12 @@ const Register = () => {
         <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-6 text-left">
           {/* Full Name */}
           <div className="md:col-span-2">
-            <label className="block text-sm font-semibold text-slate-700 mb-1">Full Name (As per ID) <span className="text-red-500">*</span></label>
+            <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1">Full Name (As per ID) <span className="text-red-500">*</span></label>
             <input
               type="text"
               value={fullName}
               onChange={(e) => setFullName(e.target.value)}
-              className="w-full px-4 py-3 rounded-xl border border-slate-200 outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-900 dark:text-white outline-none focus:ring-2 focus:ring-blue-500"
               placeholder="e.g. Sadiya Shaikh"
               required
             />
@@ -222,13 +222,13 @@ const Register = () => {
           {/* Email and OTP Section */}
           <div className="md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="relative">
-              <label className="block text-sm font-semibold text-slate-700 mb-1">Email Address <span className="text-red-500">*</span></label>
+              <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1">Email Address <span className="text-red-500">*</span></label>
               <div className="flex gap-2">
                 <input
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="flex-1 px-4 py-3 rounded-xl border border-slate-200 outline-none focus:ring-2 focus:ring-blue-500"
+                  className="flex-1 px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-900 dark:text-white outline-none focus:ring-2 focus:ring-blue-500"
                   placeholder="name@example.com"
                   required
                   disabled={otpVerified}
@@ -251,13 +251,13 @@ const Register = () => {
 
             {otpSent && !otpVerified && (
               <div>
-                <label className="block text-sm font-semibold text-slate-700 mb-1">Enter OTP</label>
+                <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1">Enter OTP</label>
                 <div className="flex gap-2">
                   <input
                     type="text"
                     value={otp}
                     onChange={(e) => setOtp(e.target.value)}
-                    className="flex-1 px-4 py-3 rounded-xl border border-slate-200 outline-none focus:ring-2 focus:ring-blue-500"
+                    className="flex-1 px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-900 dark:text-white outline-none focus:ring-2 focus:ring-blue-500"
                     placeholder="6-digit code"
                     maxLength="6"
                   />
@@ -291,12 +291,12 @@ const Register = () => {
 
           {/* Mobile Number (phone) */}
           <div>
-            <label className="block text-sm font-semibold text-slate-700 mb-1">Mobile Number <span className="text-red-500">*</span></label>
+            <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1">Mobile Number <span className="text-red-500">*</span></label>
             <input
               type="tel"
               value={mobileNumber}
               onChange={(e) => setMobileNumber(e.target.value)}
-              className="w-full px-4 py-3 rounded-xl border border-slate-200 outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-900 dark:text-white outline-none focus:ring-2 focus:ring-blue-500"
               placeholder="10-digit number"
               required
               pattern="[0-9]{10}"
@@ -306,34 +306,34 @@ const Register = () => {
 
           {/* Date of Birth (UI only) */}
           <div>
-            <label className="block text-sm font-semibold text-slate-700 mb-1">Date of Birth</label>
+            <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1">Date of Birth</label>
             <input
               type="date"
               value={dob}
               onChange={(e) => setDob(e.target.value)}
-              className="w-full px-4 py-3 rounded-xl border border-slate-200 outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-900 dark:text-white outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>
 
           {/* National ID / Aadhar (UI only) */}
           <div>
-            <label className="block text-sm font-semibold text-slate-700 mb-1">National ID / Aadhar</label>
+            <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1">National ID / Aadhar</label>
             <input
               type="text"
               value={nationalId}
               onChange={(e) => setNationalId(e.target.value)}
-              className="w-full px-4 py-3 rounded-xl border border-slate-200 outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-900 dark:text-white outline-none focus:ring-2 focus:ring-blue-500"
               placeholder="12-digit number"
             />
           </div>
 
           {/* State (required) */}
           <div className="md:col-span-2">
-            <label className="block text-sm font-semibold text-slate-700 mb-1">State <span className="text-red-500">*</span></label>
+            <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1">State <span className="text-red-500">*</span></label>
             <select
               value={state}
               onChange={(e) => setState(e.target.value)}
-              className="w-full px-4 py-3 rounded-xl border border-slate-200 outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+              className="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-800 outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-slate-900 text-slate-900 dark:text-white"
               required
             >
               <option value="">Select your state</option>
@@ -345,12 +345,12 @@ const Register = () => {
 
           {/* Password */}
           <div>
-            <label className="block text-sm font-semibold text-slate-700 mb-1">Password <span className="text-red-500">*</span></label>
+            <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1">Password <span className="text-red-500">*</span></label>
             <input
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full px-4 py-3 rounded-xl border border-slate-200 outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-900 dark:text-white outline-none focus:ring-2 focus:ring-blue-500"
               placeholder="••••••••"
               required
               minLength="6"
@@ -359,12 +359,12 @@ const Register = () => {
 
           {/* Confirm Password */}
           <div>
-            <label className="block text-sm font-semibold text-slate-700 mb-1">Confirm Password <span className="text-red-500">*</span></label>
+            <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1">Confirm Password <span className="text-red-500">*</span></label>
             <input
               type="password"
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
-              className="w-full px-4 py-3 rounded-xl border border-slate-200 outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-900 dark:text-white outline-none focus:ring-2 focus:ring-blue-500"
               placeholder="••••••••"
               required
             />

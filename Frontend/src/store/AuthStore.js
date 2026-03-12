@@ -6,6 +6,11 @@ export const useAuthStore = create(
     (set) => ({
       user: null,
       isAuthenticated: false,
+      _hasHydrated: false,
+
+      setHasHydrated: (state) => {
+        set({ _hasHydrated: state });
+      },
 
       login: (userData) => set({
         user: userData,
@@ -22,7 +27,10 @@ export const useAuthStore = create(
       })),
     }),
     {
-      name: 'smartgov-auth-storage', // LocalStorage mein is naam se save hoga
+      name: 'smartgov-auth-storage',
+      onRehydrateStorage: () => (state) => {
+        state.setHasHydrated(true);
+      },
     }
   )
 );
