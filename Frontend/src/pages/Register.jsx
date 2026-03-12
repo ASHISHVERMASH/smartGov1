@@ -214,7 +214,7 @@ const Register = () => {
               value={fullName}
               onChange={(e) => setFullName(e.target.value)}
               className="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-900 dark:text-white outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder="e.g. Sadiya Shaikh"
+              placeholder="e.g. Ethan"
               required
             />
           </div>

@@ -16,7 +16,7 @@ const ReportModal = ({ isOpen, onClose }) => {
     
     const newReport = {
       id: `TKT-${Math.floor(Math.random() * 9000) + 1000}`,
-      citizen: user?.name || "Sadiya Shaikh", // Default name if not found
+      citizen: user?.name || "XYZ", // Default name if not found
       issue: formData.get('description'),
       category: formData.get('category'),
       date: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
