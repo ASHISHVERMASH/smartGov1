@@ -2,6 +2,7 @@ package com.example.SmartGov.Config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
@@ -25,7 +26,6 @@ public class SecurityConfig {
 
     private final UserDetailsService userDetailsService;
 
-    // Constructor Injection
     public SecurityConfig(UserDetailsService userDetailsService) {
         this.userDetailsService = userDetailsService;
     }
@@ -38,20 +38,26 @@ public class SecurityConfig {
                 // Enable CORS
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
 
-                // Disable CSRF for API
+                // Disable CSRF
                 .csrf(csrf -> csrf.disable())
 
                 // Authorization Rules
                 .authorizeHttpRequests(auth -> auth
+                        // Allow CORS preflight requests
+                        .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+
+                        // Public APIs
                         .requestMatchers("/api/auth/**").permitAll()
                         .requestMatchers("/smartGov/**").permitAll()
-                        .requestMatchers("/api/send-otp").permitAll()
-                        .requestMatchers("/api/register").permitAll()
-                        .requestMatchers("/api/verify-otp").permitAll()
+
+                        // Allow test endpoint
+                        .requestMatchers("/api/auth/test").permitAll()
+
+                        // Secure all other APIs
                         .anyRequest().authenticated()
                 )
 
-                // Stateless Session (JWT ready)
+                // Stateless Session
                 .sessionManagement(session ->
                         session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
@@ -69,8 +75,8 @@ public class SecurityConfig {
         CorsConfiguration configuration = new CorsConfiguration();
 
         configuration.setAllowedOrigins(Arrays.asList(
-                "http://localhost:5173",                 // local frontend
-                "https://smartgov-portal.vercel.app"     // production frontend
+                "http://localhost:5173",
+                "https://smartgov-portal.vercel.app"
         ));
 
         configuration.setAllowedMethods(Arrays.asList(
@@ -78,7 +84,6 @@ public class SecurityConfig {
         ));
 
         configuration.setAllowedHeaders(Arrays.asList("*"));
-
         configuration.setAllowCredentials(true);
 
         UrlBasedCorsConfigurationSource source =
