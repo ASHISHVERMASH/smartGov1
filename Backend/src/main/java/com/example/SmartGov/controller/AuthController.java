@@ -1,6 +1,9 @@
 package com.example.SmartGov.controller;
 
-import com.example.SmartGov.dto.*;
+import com.example.SmartGov.dto.LoginRequest;
+import com.example.SmartGov.dto.OtpRequestDto;
+import com.example.SmartGov.dto.OtpVerificationDTO;
+import com.example.SmartGov.dto.RegisterRequest;
 import com.example.SmartGov.payload.AuthResponse;
 import com.example.SmartGov.service.AuthService;
 import com.example.SmartGov.service.OtpService;
@@ -25,114 +28,98 @@ public class AuthController {
     }
 
     // ================= REGISTER =================
-
     @PostMapping("/register")
     public ResponseEntity<?> register(@Valid @RequestBody RegisterRequest request) {
+        try {
+            if (authService.existsByEmail(request.getEmail())) {
+                return buildErrorResponse("Email already registered", HttpStatus.CONFLICT);
+            }
 
-        if (authService.existsByEmail(request.getEmail())) {
-            Map<String, Object> error = new HashMap<>();
-            error.put("success", false);
-            error.put("message", "Email already registered");
+            if (!otpService.isEmailVerified(request.getEmail())) {
+                return buildErrorResponse("Please verify OTP before registration", HttpStatus.FORBIDDEN);
+            }
 
-            return ResponseEntity.status(HttpStatus.CONFLICT).body(error);
+            AuthResponse response = authService.register(request);
+            return buildSuccessResponse(response, "Registration successful", HttpStatus.CREATED);
+
+        } catch (Exception e) {
+            return buildErrorResponse("Registration failed: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
-
-        // OTP verification check
-        boolean verified = otpService.isEmailVerified(request.getEmail());
-
-        if(!verified){
-            Map<String,Object> error = new HashMap<>();
-            error.put("success", false);
-            error.put("message", "Please verify OTP before registration");
-
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(error);
-        }
-
-        AuthResponse response = authService.register(request);
-
-        Map<String, Object> result = new HashMap<>();
-        result.put("success", true);
-        result.put("message", "Registration successful");
-        result.put("token", response.getToken());
-        result.put("firstName", response.getFirstName());
-        result.put("email", response.getEmail());
-
-        return ResponseEntity.status(HttpStatus.CREATED).body(result);
     }
 
     // ================= LOGIN =================
-
     @PostMapping("/login")
     public ResponseEntity<?> login(@Valid @RequestBody LoginRequest request) {
-
         try {
+            // Check if OTP is verified
+            if (!otpService.isEmailVerified(request.getEmail())) {
+                return buildErrorResponse("OTP not verified or expired", HttpStatus.UNAUTHORIZED);
+            }
+
             AuthResponse response = authService.login(request);
-
-            Map<String, Object> result = new HashMap<>();
-            result.put("success", true);
-            result.put("token", response.getToken());
-            result.put("firstName", response.getFirstName());
-            result.put("email", response.getEmail());
-
-            return ResponseEntity.ok(result);
+            return buildSuccessResponse(response, "Login successful", HttpStatus.OK);
 
         } catch (Exception e) {
-
-            Map<String, Object> error = new HashMap<>();
-            error.put("success", false);
-            error.put("message", "Invalid email or password");
-
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(error);
+            return buildErrorResponse("Login failed: " + e.getMessage(), HttpStatus.UNAUTHORIZED);
         }
     }
 
     // ================= SEND OTP =================
-
     @PostMapping("/send-otp")
     public ResponseEntity<?> sendOTP(@Valid @RequestBody OtpRequestDto request) {
+        try {
+            otpService.createAndSendOTP(request);
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", true);
+            response.put("message", "OTP sent successfully");
+            response.put("expiresIn", 600);
+            return ResponseEntity.ok(response);
 
-        otpService.createAndSendOTP(request);
-
-        Map<String, Object> response = new HashMap<>();
-        response.put("success", true);
-        response.put("message", "OTP sent successfully");
-        response.put("expiresIn", 600);
-
-        return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            return buildErrorResponse("Failed to send OTP: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
 
     // ================= VERIFY OTP =================
-
     @PostMapping("/verify-otp")
     public ResponseEntity<?> verifyOTP(@Valid @RequestBody OtpVerificationDTO request) {
-
-        boolean isVerified = otpService.verifyOTP(request);
-
-        Map<String, Object> response = new HashMap<>();
-
-        if (isVerified) {
-            response.put("success", true);
-            response.put("message", "OTP verified successfully");
-            response.put("verified", true);
-        } else {
-            response.put("success", false);
-            response.put("message", "Invalid or expired OTP");
-            response.put("verified", false);
+        try {
+            boolean verified = otpService.verifyOTP(request);
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", verified);
+            response.put("message", verified ? "OTP verified successfully" : "Invalid or expired OTP");
+            response.put("verified", verified);
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            return buildErrorResponse("OTP verification failed: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
-
-        return ResponseEntity.ok(response);
     }
 
     // ================= TEST =================
-
     @GetMapping("/test")
     public ResponseEntity<?> test() {
-
         Map<String, Object> response = new HashMap<>();
         response.put("message", "Backend is working!");
         response.put("status", "OK");
         response.put("timestamp", System.currentTimeMillis());
-
         return ResponseEntity.ok(response);
+    }
+
+    // ================= HELPERS =================
+    private ResponseEntity<Map<String, Object>> buildErrorResponse(String message, HttpStatus status) {
+        Map<String, Object> error = new HashMap<>();
+        error.put("success", false);
+        error.put("message", message);
+        return ResponseEntity.status(status).body(error);
+    }
+
+    private ResponseEntity<Map<String, Object>> buildSuccessResponse(AuthResponse response, String message, HttpStatus status) {
+        Map<String, Object> result = new HashMap<>();
+        result.put("success", true);
+        result.put("message", message);
+        result.put("token", response.getToken());
+        result.put("firstName", response.getFirstName());
+        result.put("email", response.getEmail());
+        return ResponseEntity.status(status).body(result);
     }
 }

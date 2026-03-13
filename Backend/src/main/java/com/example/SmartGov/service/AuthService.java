@@ -1,111 +1,82 @@
 package com.example.SmartGov.service;
 
-import com.example.SmartGov.dto.*;
+import com.example.SmartGov.dto.LoginRequest;
 import com.example.SmartGov.entity.User;
-import com.example.SmartGov.enums.ROLES;
-import com.example.SmartGov.enums.States;
-import com.example.SmartGov.exception.DuplicateResourceException;
 import com.example.SmartGov.payload.AuthResponse;
 import com.example.SmartGov.repository.UserRepository;
-import com.example.SmartGov.security.JwtService;
-import lombok.AllArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDateTime;
-
 @Service
-@AllArgsConstructor
 public class AuthService {
 
+    private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
+    private final OtpService otpService;
+    private final JwtService jwtService; // assume you have a JWT token generator
 
-    private UserRepository userRepository;
-    private PasswordEncoder passwordEncoder;
-    private AuthenticationManager authenticationManager;
-    private JwtService jwtService;
-
-    public boolean existsByEmail(String email) {
-        return userRepository.existsByEmail(email);
+    public AuthService(UserRepository userRepository,
+                       PasswordEncoder passwordEncoder,
+                       OtpService otpService,
+                       JwtService jwtService) {
+        this.userRepository = userRepository;
+        this.passwordEncoder = passwordEncoder;
+        this.otpService = otpService;
+        this.jwtService = jwtService;
     }
 
-    public AuthResponse register(RegisterRequest request) {
-        // for Check if email already exists
-        if (existsByEmail(request.getEmail())) {
-            throw new DuplicateResourceException("Email already registered");
+    // ================= LOGIN =================
+    public AuthResponse login(LoginRequest request) {
+        // 1️⃣ Find user by email
+        User user = userRepository.findByEmail(request.getEmail())
+                .orElseThrow(() -> new RuntimeException("User not found with email"));
+
+        // 2️⃣ Check if OTP verified
+        boolean otpVerified = otpService.isEmailVerified(request.getEmail());
+        if (!otpVerified) {
+            throw new RuntimeException("OTP not verified or expired");
         }
 
-        // Create new user
+        // 3️⃣ Check password
+        if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
+            throw new RuntimeException("Invalid password");
+        }
+
+        // 4️⃣ Generate JWT token
+        String token = jwtService.generateToken(user);
+
+        // 5️⃣ Return AuthResponse
+        AuthResponse response = new AuthResponse();
+        response.setToken(token);
+        response.setFirstName(user.getFirstName());
+        response.setEmail(user.getEmail());
+
+        return response;
+    }
+
+    // ================= REGISTER =================
+    public AuthResponse register(RegisterRequest request) {
+        // Save user to DB (hash password)
         User user = new User();
+        user.setEmail(request.getEmail());
         user.setFirstName(request.getFirstName());
         user.setLastName(request.getLastName());
-        user.setEmail(request.getEmail());
-        user.setMobileNumber(request.getMobileNumber());
-
-        // exceptional Handling
-        try {
-            States stateEnum = States.valueOf(request.getState().toUpperCase().replace(" ", "_"));
-            user.setState(stateEnum);
-        } catch (IllegalArgumentException e) {
-            throw new RuntimeException("Invalid state: " + request.getState());
-        }
-
         user.setPassword(passwordEncoder.encode(request.getPassword()));
-        user.setRole(ROLES.CITIZENS);
-        user.setActive(true);
-        user.setCreatedAt(LocalDateTime.now());
-        user.setUpdatedAt(LocalDateTime.now());
-
         userRepository.save(user);
 
-        // Create UserDetails for token generation
-        UserDetails userDetails = createUserDetails(user);
+        // Generate JWT
+        String token = jwtService.generateToken(user);
 
-        // Generate JWT token
-        String token = jwtService.generateToken(userDetails);
+        AuthResponse response = new AuthResponse();
+        response.setToken(token);
+        response.setFirstName(user.getFirstName());
+        response.setEmail(user.getEmail());
 
-        // Create AuthResponse using constructor
-        return new AuthResponse(token, user.getFirstName(), user.getEmail());
+        return response;
     }
 
-    public AuthResponse login(LoginRequest request) {
-        // Authenticate user
-        authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(
-                        request.getEmail(),
-                        request.getPassword()
-                )
-        );
-
-        // Get user from database
-        User user = userRepository.findByEmail(request.getEmail())
-                .orElseThrow(() -> new RuntimeException("User not found"));
-
-        // Create UserDetails for token generation
-        UserDetails userDetails = createUserDetails(user);
-
-        // Generate JWT token
-        String token = jwtService.generateToken(userDetails);
-
-        // Create AuthResponse using constructor
-        return new AuthResponse(token, user.getFirstName(), user.getEmail());
-    }
-
-    private UserDetails createUserDetails(User user) {
-        String roleName = "ROLE_" + user.getRole().name();
-
-        return org.springframework.security.core.userdetails.User.builder()
-                .username(user.getEmail())
-                .password(user.getPassword())
-                .authorities(new SimpleGrantedAuthority(roleName))
-                .accountExpired(false)
-                .accountLocked(false)
-                .credentialsExpired(false)
-                .disabled(!user.isActive())
-                .build();
+    // ================= HELPER =================
+    public boolean existsByEmail(String email) {
+        return userRepository.existsByEmail(email);
     }
 }
