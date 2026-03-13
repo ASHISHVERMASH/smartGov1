@@ -45,6 +45,9 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/auth/**").permitAll()
                         .requestMatchers("/smartGov/**").permitAll()
+                        .requestMatchers("/api/send-otp").permitAll()
+                        .requestMatchers("/api/register").permitAll()
+                        .requestMatchers("/api/verify-otp").permitAll()
                         .anyRequest().authenticated()
                 )
 
