@@ -6,6 +6,7 @@ import com.example.SmartGov.entity.OtpVerification;
 import com.example.SmartGov.enums.OTPType;
 import com.example.SmartGov.repository.OtpVerificationRepository;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.env.Environment;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
@@ -19,6 +20,7 @@ public class OtpService {
 
     private final OtpVerificationRepository otpRepository;
     private final JavaMailSender mailSender;
+    private final Environment env; // to detect dev profile
 
     @Value("${otp.expiry.minutes:10}")
     private int otpExpiryMinutes;
@@ -32,9 +34,10 @@ public class OtpService {
     @Value("${spring.mail.username:noreply@smartgov.in}")
     private String fromEmail;
 
-    public OtpService(OtpVerificationRepository otpRepository, JavaMailSender mailSender) {
+    public OtpService(OtpVerificationRepository otpRepository, JavaMailSender mailSender, Environment env) {
         this.otpRepository = otpRepository;
         this.mailSender = mailSender;
+        this.env = env;
     }
 
     // Generate 6-digit OTP
@@ -48,13 +51,13 @@ public class OtpService {
         try {
             OTPType type = OTPType.valueOf(request.getType().toUpperCase());
 
-            // Rate limit check
+            // Rate limit check (skip in dev profile)
             LocalDateTime lastHour = LocalDateTime.now().minusHours(1);
-
             Long recentRequests = otpRepository
                     .countByEmailAndOtpTypeAndCreatedAtAfter(request.getEmail(), type, lastHour);
 
-            if (recentRequests >= maxResend) {
+            boolean isDev = env.acceptsProfiles("dev"); // dev profile
+            if (!isDev && recentRequests >= maxResend) {
                 throw new RuntimeException("Maximum resend attempts reached. Please try again later.");
             }
 
@@ -75,13 +78,12 @@ public class OtpService {
 
             otp = otpRepository.save(otp);
 
-            // Send Email (with internal try/catch to prevent 500)
+            // Send Email (or console print for dev)
             sendOTPEmail(request.getEmail(), otpCode);
 
             return otp;
 
         } catch (Exception e) {
-            // Log the error and throw a RuntimeException for controller to catch
             System.err.println("Failed to create/send OTP: " + e.getMessage());
             throw new RuntimeException("Failed to send OTP. Please try again later.");
         }
@@ -155,14 +157,19 @@ public class OtpService {
                             "Regards,\nSmartGov Team"
             );
 
-            mailSender.send(message);
-            System.out.println("OTP email sent to: " + toEmail);
+            boolean isDev = env.acceptsProfiles("dev");
+            if (!isDev) {
+                mailSender.send(message);
+                System.out.println("OTP email sent to: " + toEmail);
+            } else {
+                // Print OTP in console in dev mode
+                System.out.println("\n===============================");
+                System.out.println("DEV MODE - OTP for " + toEmail + ": " + otpCode);
+                System.out.println("===============================\n");
+            }
 
         } catch (Exception e) {
             System.err.println("Email sending failed: " + e.getMessage());
-            System.out.println("\n===============================");
-            System.out.println("OTP for " + toEmail + ": " + otpCode);
-            System.out.println("===============================");
         }
     }
 }

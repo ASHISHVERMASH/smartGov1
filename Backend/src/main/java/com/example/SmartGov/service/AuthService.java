@@ -6,6 +6,7 @@ import com.example.SmartGov.payload.AuthResponse;
 import com.example.SmartGov.repository.UserRepository;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import com.example.SmartGov.dto.RegisterRequest;
 
 @Service
 public class AuthService {
