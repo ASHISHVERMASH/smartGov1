@@ -10,9 +10,27 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 public class GlobalExceptionHandler {
 
     @ExceptionHandler(ResouceNotFoundException.class)
-    public ResponseEntity<ApiResponse> handlerResourceNotFoundException(ResouceNotFoundException  exception){
-        String message = exception.getMessage();
-        ApiResponse response = ApiResponse.builder().message(message).success(false).status(HttpStatus.NOT_FOUND).build();
-            return new ResponseEntity<ApiResponse>(response , HttpStatus.NOT_FOUND);
+    public ResponseEntity<ApiResponse> handlerResourceNotFoundException(ResouceNotFoundException exception){
+
+        ApiResponse response = ApiResponse.builder()
+                .message(exception.getMessage())
+                .success(false)
+                .status(HttpStatus.NOT_FOUND)
+                .build();
+
+        return new ResponseEntity<>(response , HttpStatus.NOT_FOUND);
+    }
+
+    // ✅ ADD THIS METHOD
+    @ExceptionHandler(DuplicateResourceException.class)
+    public ResponseEntity<ApiResponse> handlerDuplicateResourceException(DuplicateResourceException exception){
+
+        ApiResponse response = ApiResponse.builder()
+                .message(exception.getMessage())
+                .success(false)
+                .status(HttpStatus.BAD_REQUEST)
+                .build();
+
+        return new ResponseEntity<>(response , HttpStatus.BAD_REQUEST);
     }
 }
