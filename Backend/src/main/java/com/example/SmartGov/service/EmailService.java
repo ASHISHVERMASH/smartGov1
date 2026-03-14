@@ -1,24 +1,46 @@
 package com.example.SmartGov.service;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.mail.SimpleMailMessage;
-import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
+import org.springframework.http.*;
+
+import java.util.Map;
 
 @Service
 public class EmailService {
 
-    @Autowired
-    private JavaMailSender mailSender;
+    @Value("${resend.api.key}")
+    private String resendApiKey;
 
     public void sendOtp(String toEmail, String otp) {
 
-        SimpleMailMessage message = new SimpleMailMessage();
+        try {
 
-        message.setTo(toEmail);
-        message.setSubject("SmartGov OTP Verification");
-        message.setText("Your OTP is: " + otp);
+            RestTemplate restTemplate = new RestTemplate();
 
-        mailSender.send(message);
+            String url = "https://api.resend.com/emails";
+
+            HttpHeaders headers = new HttpHeaders();
+            headers.set("Authorization", "Bearer " + resendApiKey);
+            headers.setContentType(MediaType.APPLICATION_JSON);
+
+            Map<String, Object> body = Map.of(
+                    "from", "SmartGov <onboarding@resend.dev>",
+                    "to", new String[]{toEmail},
+                    "subject", "SmartGov OTP Verification",
+                    "html", "<h2>Your OTP is: " + otp + "</h2>"
+            );
+
+            HttpEntity<Map<String, Object>> request =
+                    new HttpEntity<>(body, headers);
+
+            restTemplate.postForEntity(url, request, String.class);
+
+            System.out.println("OTP email sent to: " + toEmail);
+
+        } catch (Exception e) {
+            System.err.println("Resend email failed: " + e.getMessage());
+        }
     }
 }
