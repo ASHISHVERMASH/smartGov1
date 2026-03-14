@@ -40,11 +40,13 @@ public class OtpService {
         this.emailService = emailService;
     }
 
+    // Generate 6-digit OTP
     private String generateOTP() {
         Random random = new Random();
         return String.format("%06d", random.nextInt(1000000));
     }
 
+    // Create and send OTP
     public OtpVerification createAndSendOTP(OtpRequestDto request) {
 
         OTPType type = OTPType.valueOf(request.getType().toUpperCase());
@@ -64,6 +66,7 @@ public class OtpService {
             throw new RuntimeException("Maximum resend attempts reached.");
         }
 
+        // Invalidate previous OTPs
         otpRepository.markAllAsVerified(request.getEmail(), type);
 
         String otpCode = generateOTP();
@@ -84,6 +87,7 @@ public class OtpService {
         return otp;
     }
 
+    // Verify OTP
     public boolean verifyOTP(OtpVerificationDTO request) {
 
         OTPType type = OTPType.valueOf(request.getType().toUpperCase());
@@ -94,16 +98,23 @@ public class OtpService {
                         type
                 );
 
-        if (otpOpt.isEmpty()) return false;
+        if (otpOpt.isEmpty()) {
+            return false;
+        }
 
         OtpVerification otp = otpOpt.get();
 
-        if (otp.getExpiresAt().isBefore(LocalDateTime.now()))
+        // Check expiration
+        if (otp.getExpiresAt().isBefore(LocalDateTime.now())) {
             return false;
+        }
 
-        if (otp.getAttempts() >= maxAttempts)
+        // Check max attempts
+        if (otp.getAttempts() >= maxAttempts) {
             return false;
+        }
 
+        // Wrong OTP
         if (!otp.getOtpCode().equals(request.getOtp())) {
 
             otp.setAttempts(otp.getAttempts() + 1);
@@ -112,12 +123,14 @@ public class OtpService {
             return false;
         }
 
+        // Correct OTP
         otp.setVerified(true);
         otpRepository.save(otp);
 
         return true;
     }
 
+    // Check if email verified (FIXED METHOD)
     public boolean isEmailVerified(String email) {
 
         Optional<OtpVerification> otpOpt =
@@ -126,14 +139,15 @@ public class OtpService {
                         OTPType.REGISTRATION
                 );
 
-        if (otpOpt.isEmpty()) return false;
+        if (otpOpt.isEmpty()) {
+            return false;
+        }
 
-        OtpVerification otp = otpOpt.get();
-
-        return otp.getVerified() &&
-                otp.getExpiresAt().isAfter(LocalDateTime.now());
+        // Only check verified flag (NOT expiry)
+        return otpOpt.get().getVerified();
     }
 
+    // Send email
     private void sendOTPEmail(String toEmail, String otpCode) {
 
         boolean isDev = env.acceptsProfiles("dev");
