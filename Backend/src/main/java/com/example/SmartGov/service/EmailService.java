@@ -1,41 +1,46 @@
 package com.example.SmartGov.service;
 
+import okhttp3.*;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.mail.SimpleMailMessage;
-import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
 
 @Service
 public class EmailService {
 
-    private final JavaMailSender mailSender;
+    @Value("${BREVO_API_KEY}")
+    private String apiKey;
 
-    @Value("${mail.from}")
-    private String fromEmail;
-
-    public EmailService(JavaMailSender mailSender) {
-        this.mailSender = mailSender;
-    }
+    private final OkHttpClient client = new OkHttpClient();
 
     public void sendOtpEmail(String toEmail, String otpCode, int expiryMinutes) {
 
         try {
 
-            SimpleMailMessage message = new SimpleMailMessage();
+            String json = """
+            {
+              "sender": {"email": "tech.ashishverma@gmail.com"},
+              "to": [{"email": "%s"}],
+              "subject": "SmartGov | Email Verification OTP",
+              "htmlContent": "<h3>Your OTP is: %s</h3><p>Expires in %d minutes</p>"
+            }
+            """.formatted(toEmail, otpCode, expiryMinutes);
 
-            message.setFrom(fromEmail);
-            message.setTo(toEmail);
-            message.setSubject("SmartGov | Email Verification OTP");
-
-            message.setText(
-                    "Your SmartGov OTP is: " + otpCode +
-                            "\n\nThis OTP will expire in " + expiryMinutes + " minutes." +
-                            "\n\nIf you did not request this, please ignore this email."
+            RequestBody body = RequestBody.create(
+                    json,
+                    MediaType.parse("application/json")
             );
 
-            mailSender.send(message);
+            Request request = new Request.Builder()
+                    .url("https://api.brevo.com/v3/smtp/email")
+                    .post(body)
+                    .addHeader("accept", "application/json")
+                    .addHeader("api-key", apiKey)
+                    .addHeader("content-type", "application/json")
+                    .build();
 
-            System.out.println("OTP email sent to: " + toEmail);
+            Response response = client.newCall(request).execute();
+
+            System.out.println("Brevo response: " + response.code());
 
         } catch (Exception e) {
             System.err.println("Email sending failed: " + e.getMessage());
