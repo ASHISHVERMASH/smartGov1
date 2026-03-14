@@ -1,69 +1,44 @@
 package com.example.SmartGov.service;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.mail.SimpleMailMessage;
+import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestTemplate;
-import org.springframework.http.*;
-
-import java.util.Map;
 
 @Service
 public class EmailService {
 
-    @Value("${SENDGRID_API_KEY}")
-    private String sendgridApiKey;
+    private final JavaMailSender mailSender;
 
-    private final String SENDGRID_URL = "https://api.sendgrid.com/v3/mail/send";
+    @Value("${mail.from}")
+    private String fromEmail;
+
+    public EmailService(JavaMailSender mailSender) {
+        this.mailSender = mailSender;
+    }
 
     public void sendOtpEmail(String toEmail, String otpCode, int expiryMinutes) {
 
         try {
 
-            RestTemplate restTemplate = new RestTemplate();
+            SimpleMailMessage message = new SimpleMailMessage();
 
-            HttpHeaders headers = new HttpHeaders();
-            headers.setBearerAuth(sendgridApiKey);
-            headers.setContentType(MediaType.APPLICATION_JSON);
+            message.setFrom(fromEmail);
+            message.setTo(toEmail);
+            message.setSubject("SmartGov | Email Verification OTP");
 
-            Map<String, Object> body = Map.of(
-                    "personalizations", new Object[]{
-                            Map.of(
-                                    "to", new Object[]{
-                                            Map.of("email", toEmail)
-                                    }
-                            )
-                    },
-                    "from", Map.of(
-                            "email", "tech.ashishverma@gmail.com",
-                            "name", "SmartGov"
-                    ),
-                    "subject", "SmartGov | Email Verification OTP",
-                    "content", new Object[]{
-                            Map.of(
-                                    "type", "text/html",
-                                    "value",
-                                    "<h2>Your OTP is: " + otpCode + "</h2>" +
-                                            "<p>This OTP is valid for <b>" + expiryMinutes + " minutes</b>.</p>"
-                            )
-                    }
+            message.setText(
+                    "Your SmartGov OTP is: " + otpCode +
+                            "\n\nThis OTP will expire in " + expiryMinutes + " minutes." +
+                            "\n\nIf you did not request this, please ignore this email."
             );
 
-            HttpEntity<Map<String, Object>> request =
-                    new HttpEntity<>(body, headers);
+            mailSender.send(message);
 
-            ResponseEntity<String> response =
-                    restTemplate.postForEntity(SENDGRID_URL, request, String.class);
-
-            System.out.println("SendGrid Status: " + response.getStatusCode());
-
-            if (response.getStatusCode().is2xxSuccessful()) {
-                System.out.println("OTP email sent to: " + toEmail);
-            } else {
-                System.err.println("Email sending failed: " + response.getBody());
-            }
+            System.out.println("OTP email sent to: " + toEmail);
 
         } catch (Exception e) {
-            System.err.println("SendGrid email failed: " + e.getMessage());
+            System.err.println("Email sending failed: " + e.getMessage());
         }
     }
 }
