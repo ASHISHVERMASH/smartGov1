@@ -40,13 +40,11 @@ public class OtpService {
         this.emailService = emailService;
     }
 
-    // Generate OTP
     private String generateOTP() {
         Random random = new Random();
-        return String.format("%06d", random.nextInt(999999));
+        return String.format("%06d", random.nextInt(1000000));
     }
 
-    // Create and send OTP
     public OtpVerification createAndSendOTP(OtpRequestDto request) {
 
         OTPType type = OTPType.valueOf(request.getType().toUpperCase());
@@ -71,7 +69,6 @@ public class OtpService {
         String otpCode = generateOTP();
 
         OtpVerification otp = new OtpVerification();
-
         otp.setEmail(request.getEmail());
         otp.setOtpCode(otpCode);
         otp.setOtpType(type);
@@ -87,17 +84,15 @@ public class OtpService {
         return otp;
     }
 
-    // Verify OTP
     public boolean verifyOTP(OtpVerificationDTO request) {
 
         OTPType type = OTPType.valueOf(request.getType().toUpperCase());
 
         Optional<OtpVerification> otpOpt =
-                otpRepository
-                        .findTopByEmailAndOtpTypeAndVerifiedFalseOrderByCreatedAtDesc(
-                                request.getEmail(),
-                                type
-                        );
+                otpRepository.findTopByEmailAndOtpTypeAndVerifiedFalseOrderByCreatedAtDesc(
+                        request.getEmail(),
+                        type
+                );
 
         if (otpOpt.isEmpty()) return false;
 
@@ -123,26 +118,22 @@ public class OtpService {
         return true;
     }
 
-    // Check if email verified
     public boolean isEmailVerified(String email) {
 
         Optional<OtpVerification> otpOpt =
-                otpRepository
-                        .findTopByEmailAndOtpTypeOrderByCreatedAtDesc(
-                                email,
-                                OTPType.REGISTRATION
-                        );
+                otpRepository.findTopByEmailAndOtpTypeOrderByCreatedAtDesc(
+                        email,
+                        OTPType.REGISTRATION
+                );
 
-        if (otpOpt.isEmpty())
-            return false;
+        if (otpOpt.isEmpty()) return false;
 
         OtpVerification otp = otpOpt.get();
 
-        return otp.getVerified()
-                && otp.getExpiresAt().isAfter(LocalDateTime.now());
+        return otp.getVerified() &&
+                otp.getExpiresAt().isAfter(LocalDateTime.now());
     }
 
-    // Send OTP email
     private void sendOTPEmail(String toEmail, String otpCode) {
 
         boolean isDev = env.acceptsProfiles("dev");
